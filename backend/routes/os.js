@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 
 const { ordensDeServico } = require('./osStore');
+const { calcularValorLiquido } = require('../precosService');
+
 
 // Status permitidos
 const STATUS_PERMITIDOS = [
@@ -26,7 +28,28 @@ const tecnicos = [
 
 // GET - listar OS
 router.get('/', (req, res) => {
-  res.json(ordensDeServico);
+  const resultado = ordensDeServico.map(os => {
+    let valorPagamento = null;
+
+    try {
+      const { valorLiquido } = calcularValorLiquido({
+        empresaId: os.empresaId,
+        cidade: os.cidade,
+        tipo: os.tipo
+      });
+
+      valorPagamento = valorLiquido;
+    } catch (err) {
+      // preço não encontrado, mantém null
+    }
+
+    return {
+      ...os,
+      valorPagamento
+    };
+  });
+
+  res.json(resultado);
 });
 
 // PUT - atualizar status da OS
