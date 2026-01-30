@@ -1,0 +1,14 @@
+[
+  {
+    "empresaId": 1,
+    "cidade": "Magé",
+    "tipo": "instalacao",
+    "valorBruto": 50
+  },
+  {
+    "empresaId": 1,
+    "cidade": "Petrópolis",
+    "tipo": "instalacao",
+    "valorBruto": 60
+  }
+]
