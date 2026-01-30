@@ -1,3 +1,9 @@
+//Comandos git para versionamento
+//git add .
+//git commit -m "mensagem clara"
+//git push
+
+
 const express = require('express');
 const router = express.Router();
 
@@ -17,20 +23,29 @@ const STATUS_COM_OBSERVACAO_OBRIGATORIA = [
 ];
 
 //Banco de dados simulado
+const tecnicos = [
+    { id: 1, nome: 'João', tipo: 'executor'},
+    { id: 2, nome: 'Carlos', tipo: 'autorizado'},
+    ];
+
 let ordensDeServico = [
     {
       id: 1,
       cidade: 'Petrópolis',
       cto: 'F09-C01',
       status: 'disponivel',
-      observacao: null
+      observacao: null,
+      tecnicoId: null,
+      dataAtualizacao:null
     },
     {
       id: 2,
       cidade: 'Magé',
       cto: 'F03-C02',
       status: 'disponivel',
-      observacao: null
+      observacao: null,
+      tecnicoId: null,
+      dataAtualizacao:null
     }
 ];
 
@@ -73,7 +88,7 @@ router.post('/', (req, res) => {
 //PUT - atualizar status da os
 router.put('/:id', (req, res) => {
     const id = Number(req.params.id);
-    const { status, observacao } = req.body;
+    const { status, observacao,tecnicoId } = req.body;
 
     if (!STATUS_PERMITIDOS.includes(status)) {
         return res.status(400).json({
@@ -81,6 +96,19 @@ router.put('/:id', (req, res) => {
         });
     }
 
+    const tecnico = tecnicos.find(t => t.id === tecnicoId);
+  if (!tecnico) {
+    return res.status(400).json({ erro: 'Técnico inválido' });
+  }
+
+  // Regra: só autorizado pode finalizar
+  if (status === 'executada' && tecnico.tipo !== 'autorizado') {
+    return res.status(403).json({
+      erro: 'Técnico não autorizado a finalizar OS'
+    });
+  }
+
+  // Regra: impedimento exige observação
     if (STATUS_COM_OBSERVACAO_OBRIGATORIA.includes(status) && (!observacao || observacao.trim() === '')
     ) {
         return res.status(400).json({
@@ -99,10 +127,13 @@ router.put('/:id', (req, res) => {
     
     os.status = status;
     os.observacao = observacao || null;
+    os.tecnicoId = tecnico.id;
+  os.dataAtualizacao = new Date().toISOString();
 
     res.json({
         mensagem: 'Status atualizado com sucesso',
-        os
+        os,
+        tecnico: tecnico.nome
     });
 });
 
