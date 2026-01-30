@@ -5,6 +5,9 @@ app.use(express.json());
 
 const osRoutes = require('./routes/os');
 
+const indicadoresRoutes = require('./routes/indicadores');
+app.use('/indicadores', indicadoresRoutes);
+
 app.get('/', (req, res) => {
   res.send('Servidor FTTH rodando');
 });
