@@ -10,5 +10,17 @@
     "cidade": "Petrópolis",
     "tipo": "instalacao",
     "valorBruto": 60
+  },
+  {
+    "empresaId": 1,
+    "cidade": "Petrópolis",
+    "tipo": "reparo",
+    "valorBruto": 45
+  },
+  {
+    "empresaId": 1,
+    "cidade": "Magé",
+    "tipo": "reparo",
+    "valorBruto": 40
   }
 ]
