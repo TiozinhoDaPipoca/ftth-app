@@ -111,13 +111,27 @@ router.post('/login/empresa', async (req, res) => {
 // POST /auth/registro/tecnico
 // ═══════════════════════════════════════
 router.post('/registro/tecnico', async (req, res) => {
-  const { nome, cpf, email, senha, telefone, cidade } = req.body;
+  const { nome, cpf, email, senha, telefone, cidade, codigoConvite } = req.body;
 
   if (!nome || !email || !senha) {
     return res.status(400).json({ erro: 'Nome, email e senha são obrigatórios' });
   }
 
+  if (!codigoConvite) {
+    return res.status(400).json({ erro: 'Código de convite é obrigatório' });
+  }
+
   try {
+    // Valida código de convite
+    const convite = await pool.query(
+      "SELECT * FROM codigos_convite WHERE codigo = $1 AND tipo IN ('tecnico', 'ambos') AND ativo = TRUE AND usado_por IS NULL",
+      [codigoConvite.trim().toUpperCase()]
+    );
+
+    if (convite.rows.length === 0) {
+      return res.status(400).json({ erro: 'Código de convite inválido ou já utilizado' });
+    }
+
     const existe = await pool.query('SELECT id FROM tecnicos WHERE email = $1', [email]);
     if (existe.rows.length > 0) {
       return res.status(400).json({ erro: 'Email já cadastrado' });
@@ -132,6 +146,13 @@ router.post('/registro/tecnico', async (req, res) => {
     `, [nome, cpf || null, email, senhaHash, telefone || null, cidade || null]);
 
     const tecnico = result.rows[0];
+
+    // Marca convite como usado
+    await pool.query(
+      'UPDATE codigos_convite SET usado_por = $1, usado_em = NOW() WHERE id = $2',
+      [tecnico.id, convite.rows[0].id]
+    );
+
     const token = gerarToken({ id: tecnico.id, tipo: 'tecnico', nome: tecnico.nome });
 
     res.status(201).json({
@@ -148,13 +169,27 @@ router.post('/registro/tecnico', async (req, res) => {
 // POST /auth/registro/empresa
 // ═══════════════════════════════════════
 router.post('/registro/empresa', async (req, res) => {
-  const { nome, cnpj, email, senha, telefone, cidade } = req.body;
+  const { nome, cnpj, email, senha, telefone, cidade, codigoConvite } = req.body;
 
   if (!nome || !email || !senha) {
     return res.status(400).json({ erro: 'Nome, email e senha são obrigatórios' });
   }
 
+  if (!codigoConvite) {
+    return res.status(400).json({ erro: 'Código de convite é obrigatório' });
+  }
+
   try {
+    // Valida código de convite
+    const convite = await pool.query(
+      "SELECT * FROM codigos_convite WHERE codigo = $1 AND tipo IN ('empresa', 'ambos') AND ativo = TRUE AND usado_por IS NULL",
+      [codigoConvite.trim().toUpperCase()]
+    );
+
+    if (convite.rows.length === 0) {
+      return res.status(400).json({ erro: 'Código de convite inválido ou já utilizado' });
+    }
+
     const existe = await pool.query('SELECT id FROM empresas WHERE email = $1', [email]);
     if (existe.rows.length > 0) {
       return res.status(400).json({ erro: 'Email já cadastrado' });
@@ -169,6 +204,13 @@ router.post('/registro/empresa', async (req, res) => {
     `, [nome, cnpj || null, email, senhaHash, telefone || null, cidade || null]);
 
     const empresa = result.rows[0];
+
+    // Marca convite como usado
+    await pool.query(
+      'UPDATE codigos_convite SET usado_por = $1, usado_em = NOW() WHERE id = $2',
+      [empresa.id, convite.rows[0].id]
+    );
+
     const token = gerarToken({ id: empresa.id, tipo: 'empresa', nome: empresa.nome });
 
     res.status(201).json({
@@ -197,7 +239,7 @@ router.get('/me', autenticar, async (req, res) => {
     }
 
     const user = result.rows[0];
-    delete user.senha; // nunca retorna senha
+    delete user.senha;
 
     res.json({ ...user, tipo: req.usuario.tipo });
   } catch (err) {

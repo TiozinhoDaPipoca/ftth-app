@@ -66,14 +66,14 @@ function BottomNav({ active, onNavigate, jobCount, userType }) {
 function LoginPage({ onLogin, toast, setToast }) {
   const [tab, setTab] = useState("tecnico");
   const [isRegister, setIsRegister] = useState(false);
-  const [form, setForm] = useState({ nome:"", email:"", senha:"", cpf:"", cnpj:"", telefone:"", cidade:"" });
+  const [form, setForm] = useState({ nome:"", email:"", senha:"", cpf:"", cnpj:"", telefone:"", cidade:"", codigoConvite:"" });
   const [loading, setLoading] = useState(false);
   const set = (k,v) => setForm(f=>({...f,[k]:v}));
 
   const handleSubmit = async () => {
     setLoading(true);
     const path = isRegister ? `/auth/registro/${tab}` : `/auth/login/${tab}`;
-    const body = isRegister ? form : { email:form.email, senha:form.senha };
+    const body = isRegister ? { ...form, codigoConvite: form.codigoConvite.trim().toUpperCase() } : { email:form.email, senha:form.senha };
     const res = await api(path, { method:"POST", body:JSON.stringify(body) });
     if (res.ok) {
       localStorage.setItem("lampejo_token", res.data.token);
@@ -121,6 +121,7 @@ function LoginPage({ onLogin, toast, setToast }) {
               <input placeholder={tab==="tecnico"?"CPF":"CNPJ"} value={tab==="tecnico"?form.cpf:form.cnpj} onChange={e=>set(tab==="tecnico"?"cpf":"cnpj",e.target.value)} style={inputStyle}/>
               <input placeholder="Telefone" value={form.telefone} onChange={e=>set("telefone",e.target.value)} style={inputStyle}/>
               <input placeholder="Cidade" value={form.cidade} onChange={e=>set("cidade",e.target.value)} style={inputStyle}/>
+              <input placeholder="Código de Convite *" value={form.codigoConvite} onChange={e=>set("codigoConvite",e.target.value)} style={{...inputStyle, border:"2px solid #0EA5E9", background:"#F0F9FF"}}/>
             </>}
           </div>
 
