@@ -59,7 +59,7 @@ io.on('connection', (socket) => {
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ═══ Servir frontend em produção ═══
-const frontendPath = path.join(__dirname, '..', 'frontend', 'dist');
+const frontendPath = path.join(__dirname, 'public');
 if (require('fs').existsSync(frontendPath)) {
   app.use(express.static(frontendPath));
   console.log('📦 Frontend estático servido de /frontend/dist');
