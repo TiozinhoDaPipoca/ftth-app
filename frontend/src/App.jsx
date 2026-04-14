@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:3000";
+const API = import.meta.env.VITE_API_URL || "";
 
 // ─── Labels & Maps ─────────────────────────────────────────
 const TIPO_LABELS = { instalacao:"Instalação", reparo:"Reparo", reparo_sem_conexao:"Reparo s/ Conexão", reparo_lentidao:"Reparo Lentidão", reparo_intermitente:"Reparo Intermitente", manutencao:"Manutenção", migracao:"Migração", certificacao:"Certificação" };
